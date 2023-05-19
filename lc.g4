@@ -1,4 +1,4 @@
-grammar lambda;
+grammar lc;
 root : terme             // etiqueta es un terme
      ;
 terme : '(' terme ')'                   # parentesi
