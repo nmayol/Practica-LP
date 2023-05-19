@@ -1,0 +1,6 @@
+*.interp
+*.tokens
+.tokens
+.vscode
+__pycache__
+venv
