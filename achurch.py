@@ -73,7 +73,7 @@ tree = parser.root()
 if parser.getNumberOfSyntaxErrors() == 0:
     visitor = TreeVisitor()
     print('Arbre:')
-    print(printTree(visitor.visitRoot(tree))) 
+    print(printTree(visitor.visit(tree))) 
 else:
     print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
     print(tree.toStringTree(recog=parser))
