@@ -2,8 +2,8 @@ grammar lambda;
 root : terme             // etiqueta es un terme
      ;
 terme : '(' terme ')'                   # parentesi
-     | ('λ' | '\\') cap '.' terme       # abstraccio
      | terme terme                      # aplicacio
+     | ('λ' | '\\') cap '.' terme       # abstraccio
      | LLETRA                           # lletra
      ;
 
