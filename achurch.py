@@ -1,4 +1,6 @@
 from __future__ import annotations
+import random
+import string
 from antlr4 import *
 from lcLexer import lcLexer
 from lcParser import lcParser
@@ -20,12 +22,10 @@ class Abs:
     val: str
     expr: Terme
 
-@dataclass
-class Par:
-    expr: Terme
 
 
-Terme = Par | Var | Apl | Abs
+
+Terme = Var | Apl | Abs
 
 
 class TreeVisitor(lcVisitor):
@@ -37,7 +37,7 @@ class TreeVisitor(lcVisitor):
     
     def visitParentesi(self, ctx):
         [p1, expr, p2] = list(ctx.getChildren())
-        return Par(self.visit(expr))
+        return self.visit(expr)
     
     def visitAbstraccio(self, ctx):
         [sym, expr1, point, expr2] = list(ctx.getChildren())
@@ -60,7 +60,7 @@ class TreeVisitor(lcVisitor):
 
 
 def printTree(t):
-    # print(t)      # descomentar per fer proves
+    #print(t)      # descomentar per fer proves
     match t:
         case Var(x):
             return x
@@ -68,8 +68,8 @@ def printTree(t):
             return ("(" + printTree(x) + printTree(y) + ")")  
         case Abs(x, y):
             return "(λ" + x + "." + printTree(y) + ")" 
-        case Par(x):
-            return ( printTree(x))
+        case _:
+            return (printTree(t.expr))
 
 
 def beta(cap,cos,t2):
@@ -86,9 +86,70 @@ def beta(cap,cos,t2):
                 return Abs(t2,beta(cap,y,t2))
             else:
                 return Abs(x,beta(cap,y,t2))
-        case Par(x):
-            return Par(beta(cap,x,t2))
+    
 
+# retorna una llista  amb tots els valors lliures de la expressio
+def freeValues(t):
+    match t:
+        case Var(x):
+            return set([x])
+        case Apl(x, y):
+            return freeValues(x).union(freeValues(y))
+        case Abs(x, y):
+            return freeValues(y) - set([x])
+        case Par(x):
+            return freeValues(x)
+
+def boundValues(t):
+    match t:
+        case Var(x):
+            return set([])
+        case Apl(x, y):
+            return boundValues(x).union(boundValues(y))
+        case Abs(x, y):
+            return boundValues(y).union(set([x]))
+        
+
+
+def change(z,n2c,s):
+    match z:
+        case Var(x):
+            if (x in n2c):
+                return Var(s[n2c.index(x)])
+            else:
+                return Var(x)
+        case Apl(x,y):
+            return Apl(change(x,n2c,s),change(y,n2c,s))
+        case Abs(x,y):
+            if x in n2c:
+                return Abs(s[n2c.index(x)],change(y,n2c,s))
+            else:
+                return Abs(x,change(y,n2c,s))
+        
+
+
+
+def alfa(z,t2):
+    have2change = freeValues(t2)
+    zfrees = freeValues(z)
+    boundValuesFirst = boundValues(z)
+    need2change = list(set(have2change).intersection(boundValuesFirst)) # llista amb les lletres que es volen canviar
+
+    
+    substitution = set(''.join(random.choices(string.ascii_lowercase, k = len(need2change)))) # llista amb les lletres que substituiran les que es volen canviar
+    # creen una nova llista amb les lletres que no es repeteixen i que no estan a la llista de lletres que es volen canviar ni a la llista de lletres que es volen substituir
+    # per cert les condicions del while comproven que la llista de substitucio no te cap carcater que coincideixi amb un dels que ja hi ha a l'expressio o que coincideixi amb un dels que es volen substituir
+    while (set(substitution).intersection(need2change) or set(substitution).intersection(zfrees)): # type: ignore
+        substitution = list(''.join(random.choices(string.ascii_lowercase, k = len(need2change))))
+
+    
+    for x in need2change:
+        print(' ' + x + ' → ' + list(substitution)[need2change.index(x)])
+
+
+
+    return change(z,need2change,list(substitution)) # type: ignore
+    
 
 
 def avaluacio(t):
@@ -96,23 +157,21 @@ def avaluacio(t):
         case Var(x):
             return Var(x)
         case Apl(x, y):
-            match x:
-                case Par(z):
-                    match z:
-                        case Abs(a,b):   # cas de la beta reduccio
-                            print('β-reducció:')
-                            return beta(a,b,y)
-                        case _:
-                            return Apl(avaluacio(x),avaluacio(y))
+            match x:                        
                 case Abs(a,b):   # cas de la beta reduccio
+                    # comprovem que no s'hagi de fer cap alfa conversio abans de la beta reduccio
+                    x1 = alfa(x,y)
+                    if x1 != x:
+                        print('α-conversió:')
+                        print(printTree(x) + ' → ' + printTree(x1))
+                        x = x1
                     print('β-reducció:')
                     return beta(a,b,y)
                 case _:
                     return Apl(avaluacio(x),avaluacio(y))
         case Abs(x, y):
             return Abs(x,avaluacio(y))
-        case Par(x):
-            return Par(avaluacio(x))
+        
 
         
 
@@ -127,14 +186,22 @@ if parser.getNumberOfSyntaxErrors() == 0:
     print('Arbre:')
     print(printTree(t))
     step = 0
-    while step < 6:
+    while step < 20:
         t1 = avaluacio(t)
         if t1 != t:
             print(printTree(t) + ' → ' + printTree(t1))
+        else:
+            break
         t = t1
         step += 1
+
+    #### printem resultat
     print('Resultat:')
-    print(printTree(t))
+    if step == 20:
+        print('Nothing')
+    else:
+        print(printTree(t))
+    
 
 else:
     print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
