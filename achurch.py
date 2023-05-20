@@ -97,8 +97,6 @@ def freeValues(t):
             return freeValues(x).union(freeValues(y))
         case Abs(x, y):
             return freeValues(y) - set([x])
-        case Par(x):
-            return freeValues(x)
 
 def boundValues(t):
     match t:
@@ -144,11 +142,11 @@ def alfa(z,t2):
 
     
     for x in need2change:
-        print(' ' + x + ' → ' + list(substitution)[need2change.index(x)])
+        print('α-conversió: ' + x + ' → ' + list(substitution)[need2change.index(x)])
 
-
-
-    return change(z,need2change,list(substitution)) # type: ignore
+    z1 = change(z,need2change,list(substitution)) # type: ignore
+    print(printTree(z) + ' → ' + printTree(z1))
+    return z1
     
 
 
@@ -161,12 +159,8 @@ def avaluacio(t):
                 case Abs(a,b):   # cas de la beta reduccio
                     # comprovem que no s'hagi de fer cap alfa conversio abans de la beta reduccio
                     x1 = alfa(x,y)
-                    if x1 != x:
-                        print('α-conversió:')
-                        print(printTree(x) + ' → ' + printTree(x1))
-                        x = x1
-                    print('β-reducció:')
-                    return beta(a,b,y)
+                    print('β-conversió: ')
+                    return beta(x1.val,x1.expr,y)                    # type: ignore
                 case _:
                     return Apl(avaluacio(x),avaluacio(y))
         case Abs(x, y):
