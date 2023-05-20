@@ -63,6 +63,50 @@ def printTree(t):
             return "(λ" + x + "." + printTree(y) + ")" 
         case Par(x):
             return ( printTree(x))
+
+
+def beta(cap,cos,t2):
+    match cos:
+        case Var(x):
+            if x == cap:
+                return t2
+            else:
+                return Var(x)
+        case Apl(x, y):
+            return Apl(beta(cap,x,t2),beta(cap,y,t2))
+        case Abs(x, y):
+            if x == cap:
+                return Abs(t2,beta(cap,y,t2))
+            else:
+                return Abs(x,beta(cap,y,t2))
+        case Par(x):
+            return Par(beta(cap,x,t2))
+
+
+
+def avaluacio(t):
+    match t:
+        case Var(x):
+            return Var(x)
+        case Apl(x, y):
+            match x:
+                case Par(z):
+                    match z:
+                        case Abs(a,b):   # cas de la beta reduccio
+                            print('β-reducció:')
+                            return beta(a,b,y)
+                        case _:
+                            return Apl(avaluacio(x),avaluacio(y))
+                case Abs(a,b):   # cas de la beta reduccio
+                    print('β-reducció:')
+                    return beta(a,b,y)
+                case _:
+                    return Apl(avaluacio(x),avaluacio(y))
+        case Abs(x, y):
+            return Abs(x,avaluacio(y))
+        case Par(x):
+            return Par(avaluacio(x))
+
         
 
 input_stream = InputStream(input('? '))
@@ -72,8 +116,19 @@ parser = lcParser(token_stream)
 tree = parser.root()
 if parser.getNumberOfSyntaxErrors() == 0:
     visitor = TreeVisitor()
+    t = visitor.visit(tree)
     print('Arbre:')
-    print(printTree(visitor.visit(tree))) 
+    print(printTree(t))
+    step = 0
+    while step < 6:
+        t1 = avaluacio(t)
+        if t1 != t:
+            print(printTree(t) + ' → ' + printTree(t1))
+        t = t1
+        step += 1
+    print('Resultat:')
+    print(printTree(t))
+
 else:
     print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
     print(tree.toStringTree(recog=parser))
