@@ -41,7 +41,13 @@ class TreeVisitor(lcVisitor):
     
     def visitAbstraccio(self, ctx):
         [sym, expr1, point, expr2] = list(ctx.getChildren())
-        return Abs(expr1.getText(),self.visit(expr2))
+        res2 = self.visit(expr2)
+        res1 = expr1.getText()
+        while len(res1) != 1:
+            lastChar = expr1.getText()[-1]
+            res2 = Abs(lastChar,res2)
+            res1 = res1[:-1]
+        return Abs(res1,res2)
     
     def visitAplicacio(self, ctx):
         [expr1, expr2] = list(ctx.getChildren())
@@ -50,6 +56,7 @@ class TreeVisitor(lcVisitor):
     def visitLletra(self, ctx):
         [lletra] = list(ctx.getChildren())
         return Var(lletra.getText())
+    
 
 
 def printTree(t):
