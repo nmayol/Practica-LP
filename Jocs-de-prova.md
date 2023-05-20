@@ -1,4 +1,5 @@
-Jocs de prova que proven NOMÉS Beta-reduccions
+Jocs de prova que proven NOMÉS Beta-reduccions. Els jocs els he generat amb ChatGPT i són jocs que només necessiten beta reduccions.
+Per comprovar el resultat es pot fer servir aquesta [web](https://lambdacalc.io/)
 
 1. (\x. x) (\y. y)
 2. (\x. \y. x y) (\z. z)
