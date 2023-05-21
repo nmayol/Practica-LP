@@ -18,14 +18,23 @@ class Apl:
     dre: Terme
 
 @dataclass
+class Abs: # type: ignore
+    val: str
+    expr: Terme
+
+@dataclass
 class Abs:
     val: str
     expr: Terme
 
+@dataclass
+class Macro:
+    nom: str
+    expr: Terme
 
 
 
-Terme = Var | Apl | Abs
+Terme = Var | Apl | Abs 
 
 
 class TreeVisitor(lcVisitor):
@@ -57,6 +66,11 @@ class TreeVisitor(lcVisitor):
         [lletra] = list(ctx.getChildren())
         return Var(lletra.getText())
     
+    def visitMacro(self, ctx):
+        [nom,inutil,expr] = list(ctx.getChildren())
+        res = self.visit(expr)
+        return Macro(nom.getText(),res)
+    
 
 
 def printTree(t):
@@ -68,6 +82,8 @@ def printTree(t):
             return ("(" + printTree(x) + printTree(y) + ")")  
         case Abs(x, y):
             return "(λ" + x + "." + printTree(y) + ")" 
+        case Macro(x,y):
+            return  x + ' ≡ ' + printTree(y)
         case _:
             return (printTree(t.expr))
 
@@ -145,7 +161,8 @@ def alfa(z,t2):
         print('α-conversió: ' + x + ' → ' + list(substitution)[need2change.index(x)])
 
     z1 = change(z,need2change,list(substitution)) # type: ignore
-    print(printTree(z) + ' → ' + printTree(z1))
+    if (z != z1):
+        print(printTree(z) + ' → ' + printTree(z1))
     return z1
     
 
@@ -159,7 +176,7 @@ def avaluacio(t):
                 case Abs(a,b):   # cas de la beta reduccio
                     # comprovem que no s'hagi de fer cap alfa conversio abans de la beta reduccio
                     x1 = alfa(x,y)
-                    print('β-conversió: ')
+                    print('β-reducció: ')
                     return beta(x1.val,x1.expr,y)                    # type: ignore
                 case _:
                     return Apl(avaluacio(x),avaluacio(y))
@@ -174,27 +191,33 @@ lexer = lcLexer(input_stream)
 token_stream = CommonTokenStream(lexer)
 parser = lcParser(token_stream)
 tree = parser.root()
+MACROS = []
 if parser.getNumberOfSyntaxErrors() == 0:
     visitor = TreeVisitor()
     t = visitor.visit(tree)
-    print('Arbre:')
-    print(printTree(t))
-    step = 0
-    while step < 20:
-        t1 = avaluacio(t)
-        if t1 != t:
-            print(printTree(t) + ' → ' + printTree(t1))
-        else:
-            break
-        t = t1
-        step += 1
-
-    #### printem resultat
-    print('Resultat:')
-    if step == 20:
-        print('Nothing')
-    else:
-        print(printTree(t))
+    match t:
+        case Macro(x,y):
+            MACROS.append(t)
+            for x in MACROS:
+                print(printTree(x))
+        case _:
+            print('Arbre:')
+            print(printTree(t))
+            step = 0
+            while step < 20:
+                t1 = avaluacio(t)
+                if t1 != t:
+                    print(printTree(t) + ' → ' + printTree(t1))
+                else:
+                    break
+                t = t1
+                step += 1
+            #### printem resultat
+            print('Resultat:')
+            if step == 20:
+                print('Nothing')
+            else:
+                print(printTree(t))
     
 
 else:

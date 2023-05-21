@@ -14,6 +14,11 @@ class lcVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by lcParser#macro.
+    def visitMacro(self, ctx:lcParser.MacroContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by lcParser#lletra.
     def visitLletra(self, ctx:lcParser.LletraContext):
         return self.visitChildren(ctx)

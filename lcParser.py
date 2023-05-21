@@ -10,17 +10,18 @@ else:
 
 def serializedATN():
     return [
-        4,1,7,34,2,0,7,0,2,1,7,1,2,2,7,2,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,
-        1,1,1,1,1,1,1,1,1,1,3,1,20,8,1,1,1,1,1,5,1,24,8,1,10,1,12,1,27,9,
-        1,1,2,4,2,30,8,2,11,2,12,2,31,1,2,0,1,2,3,0,2,4,0,1,1,0,3,4,34,0,
-        6,1,0,0,0,2,19,1,0,0,0,4,29,1,0,0,0,6,7,3,2,1,0,7,1,1,0,0,0,8,9,
-        6,1,-1,0,9,10,5,1,0,0,10,11,3,2,1,0,11,12,5,2,0,0,12,20,1,0,0,0,
-        13,14,7,0,0,0,14,15,3,4,2,0,15,16,5,5,0,0,16,17,3,2,1,2,17,20,1,
-        0,0,0,18,20,5,6,0,0,19,8,1,0,0,0,19,13,1,0,0,0,19,18,1,0,0,0,20,
-        25,1,0,0,0,21,22,10,3,0,0,22,24,3,2,1,4,23,21,1,0,0,0,24,27,1,0,
-        0,0,25,23,1,0,0,0,25,26,1,0,0,0,26,3,1,0,0,0,27,25,1,0,0,0,28,30,
-        5,6,0,0,29,28,1,0,0,0,30,31,1,0,0,0,31,29,1,0,0,0,31,32,1,0,0,0,
-        32,5,1,0,0,0,3,19,25,31
+        4,1,9,37,2,0,7,0,2,1,7,1,2,2,7,2,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,23,8,1,1,1,1,1,5,1,27,8,1,10,
+        1,12,1,30,9,1,1,2,4,2,33,8,2,11,2,12,2,34,1,2,0,1,2,3,0,2,4,0,1,
+        1,0,3,4,38,0,6,1,0,0,0,2,22,1,0,0,0,4,32,1,0,0,0,6,7,3,2,1,0,7,1,
+        1,0,0,0,8,9,6,1,-1,0,9,10,5,1,0,0,10,11,3,2,1,0,11,12,5,2,0,0,12,
+        23,1,0,0,0,13,14,7,0,0,0,14,15,3,4,2,0,15,16,5,5,0,0,16,17,3,2,1,
+        3,17,23,1,0,0,0,18,23,5,7,0,0,19,20,5,8,0,0,20,21,5,6,0,0,21,23,
+        3,2,1,1,22,8,1,0,0,0,22,13,1,0,0,0,22,18,1,0,0,0,22,19,1,0,0,0,23,
+        28,1,0,0,0,24,25,10,4,0,0,25,27,3,2,1,5,26,24,1,0,0,0,27,30,1,0,
+        0,0,28,26,1,0,0,0,28,29,1,0,0,0,29,3,1,0,0,0,30,28,1,0,0,0,31,33,
+        5,7,0,0,32,31,1,0,0,0,33,34,1,0,0,0,34,32,1,0,0,0,34,35,1,0,0,0,
+        35,5,1,0,0,0,3,22,28,34
     ]
 
 class lcParser ( Parser ):
@@ -33,10 +34,12 @@ class lcParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'('", "')'", "'\\u03BB'", "'\\'", "'.'" ]
+    literalNames = [ "<INVALID>", "'('", "')'", "'\\u03BB'", "'\\'", "'.'", 
+                     "'\\u2261'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "<INVALID>", "<INVALID>", "LLETRA", "WS" ]
+                      "<INVALID>", "<INVALID>", "<INVALID>", "LLETRA", "MACRO", 
+                      "WS" ]
 
     RULE_root = 0
     RULE_terme = 1
@@ -50,8 +53,10 @@ class lcParser ( Parser ):
     T__2=3
     T__3=4
     T__4=5
-    LLETRA=6
-    WS=7
+    T__5=6
+    LLETRA=7
+    MACRO=8
+    WS=9
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -116,6 +121,25 @@ class lcParser ( Parser ):
      
         def copyFrom(self, ctx:ParserRuleContext):
             super().copyFrom(ctx)
+
+
+    class MacroContext(TermeContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a lcParser.TermeContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def MACRO(self):
+            return self.getToken(lcParser.MACRO, 0)
+        def terme(self):
+            return self.getTypedRuleContext(lcParser.TermeContext,0)
+
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitMacro" ):
+                return visitor.visitMacro(self)
+            else:
+                return visitor.visitChildren(self)
 
 
     class LletraContext(TermeContext):
@@ -202,7 +226,7 @@ class lcParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 19
+            self.state = 22
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [1]:
@@ -233,20 +257,31 @@ class lcParser ( Parser ):
                 self.state = 15
                 self.match(lcParser.T__4)
                 self.state = 16
-                self.terme(2)
+                self.terme(3)
                 pass
-            elif token in [6]:
+            elif token in [7]:
                 localctx = lcParser.LletraContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 18
                 self.match(lcParser.LLETRA)
                 pass
+            elif token in [8]:
+                localctx = lcParser.MacroContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 19
+                self.match(lcParser.MACRO)
+                self.state = 20
+                self.match(lcParser.T__5)
+                self.state = 21
+                self.terme(1)
+                pass
             else:
                 raise NoViableAltException(self)
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 25
+            self.state = 28
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -256,13 +291,13 @@ class lcParser ( Parser ):
                     _prevctx = localctx
                     localctx = lcParser.AplicacioContext(self, lcParser.TermeContext(self, _parentctx, _parentState))
                     self.pushNewRecursionContext(localctx, _startState, self.RULE_terme)
-                    self.state = 21
-                    if not self.precpred(self._ctx, 3):
+                    self.state = 24
+                    if not self.precpred(self._ctx, 4):
                         from antlr4.error.Errors import FailedPredicateException
-                        raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                    self.state = 22
-                    self.terme(4) 
-                self.state = 27
+                        raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
+                    self.state = 25
+                    self.terme(5) 
+                self.state = 30
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
 
@@ -307,16 +342,16 @@ class lcParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 29 
+            self.state = 32 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 28
+                self.state = 31
                 self.match(lcParser.LLETRA)
-                self.state = 31 
+                self.state = 34 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==6):
+                if not (_la==7):
                     break
 
         except RecognitionException as re:
@@ -341,7 +376,7 @@ class lcParser ( Parser ):
 
     def terme_sempred(self, localctx:TermeContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 3)
+                return self.precpred(self._ctx, 4)
          
 
 
