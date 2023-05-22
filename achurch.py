@@ -41,8 +41,7 @@ class TreeVisitor(lcVisitor):
 
     def visitRoot(self, ctx):
         [expr] = list(ctx.getChildren())
-        x = self.visit(expr)
-        return x
+        return self.visit(expr)
     
     def visitParentesi(self, ctx):
         [p1, expr, p2] = list(ctx.getChildren())
@@ -71,10 +70,28 @@ class TreeVisitor(lcVisitor):
         res = self.visit(expr)
         return Macro(nom.getText(),res)
     
+    def visitMacroI(self, ctx):
+        [nom,inutil,expr] = list(ctx.getChildren())
+        res = self.visit(expr)
+        return Macro(nom.getText(),res)
+
+    def visitMacroFormula(self, ctx):
+        [nom] = list(ctx.getChildren())
+        [macro] = [obj for obj in MACROS if obj.nom == nom.getText()]
+        return macro.expr
+    
+    def visitMacroIFormula(self, ctx):
+        [expr1, op, expr2] = list(ctx.getChildren())
+        [op] = [obj for obj in MACROS if obj.nom == op.getText()]
+        return Apl(Apl(op.expr,self.visit(expr1)),self.visit(expr2))
+    
+
+
+
 
 
 def printTree(t):
-    #print(t)      # descomentar per fer proves
+    # print(t)      # descomentar per fer proves
     match t:
         case Var(x):
             return x
@@ -88,6 +105,19 @@ def printTree(t):
             return (printTree(t.expr))
 
 
+
+# Apl(esq=Abs(val='x', expr=Abs(val='x', expr=Apl(esq=Var(val='x'), dre=Var(val='y')))), dre=Apl(esq=Var(val='a'), dre=Var(val='b')))
+# (\x. (\x. (x,y))) (ab)
+# (\x. (x,y)) (ab)
+
+# (\xx.(xy))(ab)
+# (\ab.(aby))
+
+# (λy.x(yz))       cap = y  cos = x(yz) dre = (ab)
+# beta(x), beta (yz)
+# beta (y) beta(z)
+
+
 def beta(cap,cos,t2):
     match cos:
         case Var(x):
@@ -99,7 +129,7 @@ def beta(cap,cos,t2):
             return Apl(beta(cap,x,t2),beta(cap,y,t2))
         case Abs(x, y):
             if x == cap:
-                return Abs(t2,beta(cap,y,t2))
+                return Abs(x,y)
             else:
                 return Abs(x,beta(cap,y,t2))
     
@@ -156,7 +186,7 @@ def alfa(z,t2):
     while (set(substitution).intersection(need2change) or set(substitution).intersection(zfrees)): # type: ignore
         substitution = list(''.join(random.choices(string.ascii_lowercase, k = len(need2change))))
 
-    
+    # print(need2change)
     for x in need2change:
         print('α-conversió: ' + x + ' → ' + list(substitution)[need2change.index(x)])
 
@@ -184,42 +214,43 @@ def avaluacio(t):
             return Abs(x,avaluacio(y))
         
 
-        
-
-input_stream = InputStream(input('? '))
-lexer = lcLexer(input_stream)
-token_stream = CommonTokenStream(lexer)
-parser = lcParser(token_stream)
-tree = parser.root()
-MACROS = []
-if parser.getNumberOfSyntaxErrors() == 0:
-    visitor = TreeVisitor()
-    t = visitor.visit(tree)
-    match t:
-        case Macro(x,y):
-            MACROS.append(t)
-            for x in MACROS:
-                print(printTree(x))
-        case _:
-            print('Arbre:')
-            print(printTree(t))
-            step = 0
-            while step < 20:
-                t1 = avaluacio(t)
-                if t1 != t:
-                    print(printTree(t) + ' → ' + printTree(t1))
-                else:
-                    break
-                t = t1
-                step += 1
-            #### printem resultat
-            print('Resultat:')
-            if step == 20:
-                print('Nothing')
-            else:
-                print(printTree(t))
+MACROS = []        
+while True:
+    input_stream = InputStream(input('? '))
+    lexer = lcLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = lcParser(token_stream)
+    tree = parser.root()
     
 
-else:
-    print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
-    print(tree.toStringTree(recog=parser))
+    if parser.getNumberOfSyntaxErrors() == 0:
+        visitor = TreeVisitor()
+        t = visitor.visit(tree)
+        match t:
+            case Macro(x,y):
+                MACROS.append(t)
+                for x in MACROS:
+                    print(printTree(x))
+            case _:
+                print('Arbre:')
+                print(printTree(t))
+                step = 0
+                while step < 20:
+                    t1 = avaluacio(t)
+                    if t1 != t:
+                        print(printTree(t) + ' → ' + printTree(t1))
+                    else:
+                        break
+                    t = t1
+                    step += 1
+                #### printem resultat
+                print('Resultat:')
+                if step == 20:
+                    print('Nothing')
+                else:
+                    print(printTree(t))
+        
+
+    else:
+        print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
+        print(tree.toStringTree(recog=parser))
