@@ -19,6 +19,11 @@ class lcVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by lcParser#macroIFormula.
+    def visitMacroIFormula(self, ctx:lcParser.MacroIFormulaContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by lcParser#lletra.
     def visitLletra(self, ctx:lcParser.LletraContext):
         return self.visitChildren(ctx)
@@ -29,8 +34,18 @@ class lcVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by lcParser#macroI.
+    def visitMacroI(self, ctx:lcParser.MacroIContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by lcParser#abstraccio.
     def visitAbstraccio(self, ctx:lcParser.AbstraccioContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by lcParser#macroFormula.
+    def visitMacroFormula(self, ctx:lcParser.MacroFormulaContext):
         return self.visitChildren(ctx)
 
 
