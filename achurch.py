@@ -106,18 +106,6 @@ def printTree(t):
 
 
 
-# Apl(esq=Abs(val='x', expr=Abs(val='x', expr=Apl(esq=Var(val='x'), dre=Var(val='y')))), dre=Apl(esq=Var(val='a'), dre=Var(val='b')))
-# (\x. (\x. (x,y))) (ab)
-# (\x. (x,y)) (ab)
-
-# (\xx.(xy))(ab)
-# (\ab.(aby))
-
-# (λy.x(yz))       cap = y  cos = x(yz) dre = (ab)
-# beta(x), beta (yz)
-# beta (y) beta(z)
-
-
 def beta(cap,cos,t2):
     match cos:
         case Var(x):
@@ -174,9 +162,9 @@ def change(z,n2c,s):
 
 
 def alfa(z,t2):
-    have2change = freeValues(t2)
-    zfrees = freeValues(z)
-    boundValuesFirst = boundValues(z)
+    have2change = freeValues(t2) # lliures de la dreta
+    zfrees = freeValues(z) # lliures de l'esquerra
+    boundValuesFirst = boundValues(z) # lligades de l'esquerra
     need2change = list(set(have2change).intersection(boundValuesFirst)) # llista amb les lletres que es volen canviar
 
     
