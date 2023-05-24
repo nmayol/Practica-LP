@@ -1,8 +1,15 @@
-# Bot de Telegram que interpreta expressions en lambda-càlcul
-Repositori de la Practica de Llenguatges de Programació, feta el quatrimestre de primavera del curs 2022-2023. La pràctica és un Bot de Telegram que traballa amb expressions de lambda càlcul. Fa alfa-conversions, beta-reduccions
+# L’intèrpret de λ-càlcul AChurch
+Repositori de la Practica de Llenguatges de Programació, feta el quatrimestre de primavera del curs 2022-2023. La pràctica és un Bot de Telegram que traballa amb expressions de lambda càlcul. Fa α-conversions i β-reduccions
+
+## Fitxers del repositori
+* lc.g4: Gramàtica de l'interpret
+* achurch.py: Intèrpret
+* bot.py: Fitxer intèrpret + bot 
+* la resta de fitxers són bé fitxers que es creen al compilar o bé coses meves.
 
 ## Instrucions d'execució
-El programa es pot executar de dos maneres diferents: Podeu executar l'intèrpret o bé el bot sencer.
+
+He posat els fitxers de dos maneres diferents: Podeu executar l'intèrpret o el bot sencer.
 
 ### Execució de l'intèrpret
 Primer de tot hem de compilar la gramàtica creada amb antlr4, que conté
