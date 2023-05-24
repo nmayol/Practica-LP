@@ -1,6 +1,6 @@
-# Generated from lc.g4 by ANTLR 4.12.0
+# Generated from lc.g4 by ANTLR 4.13.0
 from antlr4 import *
-if __name__ is not None and "." in __name__:
+if "." in __name__:
     from .lcParser import lcParser
 else:
     from lcParser import lcParser
