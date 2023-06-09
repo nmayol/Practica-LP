@@ -10,3 +10,7 @@ output.png
 .antlr
 bot.py
 interpret.py
+lcLexer.py
+lcParser.py
+lcVisitor.py
+achurch-NeusMayol.zip
