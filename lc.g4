@@ -6,7 +6,7 @@ terme : '(' terme ')'                   # parentesi
      | ('λ' | '\\') cap '.' terme       # abstraccio
      | LLETRA                           # lletra 
      | MACRO '≡' terme                  # macro
-     | MACROINFIXA '≡' terme            # macroI
+     | MACROINFIXA ('≡'|'=') terme      # macroI
      | MACRO                            # macroFormula
      | terme MACROINFIXA terme          # macroIFormula 
      ;
