@@ -211,7 +211,7 @@ def avaluacio(t):
     print(t)
     match t:
         case Var(x):
-            return ['β',Var(x)]
+            return ['a',Var(x)]
         case Apl(x, y):
             match x:                        
                 case Abs(a,b):   # cas de la beta reduccio
@@ -222,9 +222,12 @@ def avaluacio(t):
                     else:
                         return ['β',beta(x1.val,x1.expr,y)]                    # type: ignore
                 case _:
-                    [lletra,a] = avaluacio(x)
-                    [lletra,b] = avaluacio(y) 
-                    return [lletra, Apl(a,b)]
+                    [lletraA,a] = avaluacio(x)
+                    if (lletraA != 'a'): # la lletra a simbolitza que no s'ha fet cap canvi
+                        return [lletraA, Apl(a,y)]
+                    else:
+                        [lletraB,b] = avaluacio(y)
+                        return [lletraB, Apl(x,b)]
         case Abs(x, y):
             [lletra,a] = avaluacio(y)
             return [lletra, Abs(x,a)]
@@ -335,13 +338,20 @@ async def text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             montaGraf(t)
             await context.bot.send_photo(chat_id=update.message.chat_id, photo=open('output.png', 'rb'))
             [lletra,t1] = avaluacio(t)
-            while t != t1:
+            step = 0
+            while lletra != 'a' and step < 10:
                 await context.bot.send_message(chat_id=update.effective_chat.id, text= printTree(t) + ' → ' + lletra + ' → ' + printTree(t1))
                 t = t1
                 [lletra, t1] = avaluacio(t)
-            await context.bot.send_message(chat_id=update.effective_chat.id, text= printTree(t))
-            montaGraf(t)
-            await context.bot.send_photo(chat_id=update.message.chat_id, photo=open('output.png', 'rb'))
+                step = step + 1
+
+            # Mirar si el cas es recursi
+            if step == 10:
+                await context.bot.send_message(chat_id=update.effective_chat.id, text= 'Nothing')
+            else:
+                await context.bot.send_message(chat_id=update.effective_chat.id, text= printTree(t))
+                montaGraf(t)
+                await context.bot.send_photo(chat_id=update.message.chat_id, photo=open('output.png', 'rb'))
 
 
 # funcio que s'executa quan es rep la comanda /start
@@ -398,3 +408,8 @@ if __name__ == '__main__':
     application.run_polling()
 
 #######################################################################################################
+
+
+
+
+
